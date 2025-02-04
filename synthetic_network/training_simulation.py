@@ -80,13 +80,13 @@ class Simulation:
         start_time = timeit.default_timer()
 
         # first, generate the route file for this simulation and set up sumo
-        seed=episode #种子=回合数，保证每回合的随机数不一样
+        seed=episode # ensure the random seeds vary in each episode
         np.random.seed(seed)
         
         #traci.start(self._sumo_cmd)
         print("Simulating...")
 
-        # inits 初始化各个参数
+        # inits 
         self._step = 0
 
         self._sum_reward_1 = 0
@@ -657,78 +657,11 @@ class Simulation:
         print("Training...")
         start_time = timeit.default_timer()
         for train_epoch in range(self._training_epochs):
-            '''
-            if train_epoch%100==0:
-                #self._target_Q_net_1 = tf.keras.models.clone_model_with_weights(self._Model._model_1)
-                self._target_Q_net_1 = tf.keras.models.clone_model(self._Model._model_1)
-                self._target_Q_net_1.set_weights(self._Model._model_1.get_weights())
-            '''
             self._replay()
         training_time = round(timeit.default_timer() - start_time, 1)
 
         return simulation_time, training_time
-
-    '''
-    def _reward_function(self, current_state, action, next_state):
         
-        Thoughts:
-        To refine the reward function for the bus holding control problem, several key changes are proposed:
-        1. Introduce a balanced approach to penalize high variability in time headways, directly addressing the task's objective to balance the headways.
-        2. More directly incentivize reductions in passenger waiting times, as this directly impacts passenger satisfaction and system efficiency.
-        3. Include a comprehensive system efficiency metric that considers headway balancing, passenger travel time, and waiting time.
-        4. Implement dynamic reward scaling based on performance metrics to ensure that improvements in critical areas are adequately incentivized.
-        5. Introduce penalties for actions that do not lead to headway improvement or reduction in passenger times, promoting more effective strategy exploration.
-        These modifications aim to guide the RL agent toward more efficient bus system performance by balancing headways, reducing waiting and travel times, and improving overall reliability.
-        
-        # (initial the reward)
-        reward = 0
-    
-        # (import packages and define helper functions)
-        import numpy as np
-    
-        # Helper function to calculate headway difference
-        def calculate_headway_difference(forward_headway, backward_headway):
-            return np.abs(forward_headway - backward_headway)
-    
-        # Helper function to calculate the efficiency metric
-        def system_efficiency_metric(headway_difference, passenger_waiting_time, on_board_time):
-            # Combines headway balance, waiting time, and travel time into a single metric
-            return headway_difference + passenger_waiting_time + on_board_time
-    
-        # Calculate the headway difference for the current and next states
-        current_headway_difference = calculate_headway_difference(current_state[0], current_state[1])
-        next_headway_difference = calculate_headway_difference(next_state[0], next_state[1])
-    
-        # Penalize high variability in time headways
-        reward -= next_headway_difference * 1.5
-    
-        # Reward reductions in passenger waiting time and on-board time
-        waiting_time_reduction = current_state[3] - next_state[3]
-        on_board_time_reduction = current_state[2] - next_state[2]
-        reward += (waiting_time_reduction + on_board_time_reduction) * 2
-    
-        # Calculate system efficiency metric for the next state
-        next_system_efficiency = system_efficiency_metric(next_headway_difference, next_state[3], next_state[2])
-        # Incentivize improvements in system efficiency
-        reward -= next_system_efficiency
-    
-        # Dynamic reward scaling based on current performance metrics
-        if next_system_efficiency > 100:  # Threshold for scaling
-            reward *= 1.2  # Scale up rewards for improving underperforming areas
-    
-        # Penalize repeated ineffective actions
-        if action == 0 and next_headway_difference >= current_headway_difference:
-            reward -= 5  # Penalize holding when it doesn't contribute to headway improvement
-    
-        # Encourage releasing the bus if it helps to balance headways more effectively
-        if action == 1 and current_state[0] > current_state[1] * 1.5:
-            reward += 10
-    
-        # Regularize reward to stabilize training
-        reward = np.clip(reward, -10, 10)
-    
-        return reward
-    '''
     
     def _choose_action_1(self, state, epsilon):
         """
@@ -895,42 +828,8 @@ class Simulation:
                 current_q_1[action_1] = reward_1 + self._gamma * np.amax(q_s_a_d_1[i])  # update Q(state, action)
                 x_1[i] = state_1
                 y_1[i] = current_q_1  # Q(state) that includes the updated action value
-                #似乎明白了些什么，普通的qlearning就是把state和current_q值列表列出来，
-                #deep q network就是用已有的数据对，搞了个拟合，因此成为连续的了
 
             self._Model.train_batch_1(x_1, y_1)  # train the NN
-        '''
-        #DDQN
-        if len(batch_1) > 0:  # if the memory is full enough
-            states_1 = np.array([val[0] for val in batch_1])  # extract states from the batch
-            next_states_1 = np.array([val[3] for val in batch_1])  # extract next states from the batch
-            #val[0]-old_state栏，val[3]-current_state栏（？）
-
-            # prediction
-            q_s_a_1 = self._Model.predict_batch_1(states_1)  # predict Q(state), for every sample
-            q_s_a_d_1 = self._Model.predict_batch_1(next_states_1)  # predict Q(next_state), for every sample
-            target_q_s_a_d_1 = self._target_Q_net_1.predict(next_states_1,verbose=0)
-            
-            #print("target Q", "\n", target_q_s_a_d_1)
-            #print("updated Q", "\n", q_s_a_d_1)
-            
-            # setup training arrays
-            x_1 = np.zeros((len(batch_1), self._num_states))
-            y_1 = np.zeros((len(batch_1), self._num_actions))
-
-            for i, b in enumerate(batch_1):
-                state_1, action_1, reward_1, _ = b[0], b[1], b[2], b[3]  # extract data from one sample
-                current_q_1 = q_s_a_1[i]  # get the Q(state) predicted before
-                #current_q_1[action_1] = reward_1 + self._gamma * np.amax(q_s_a_d_1[i])  # update Q(state, action)
-                max_action_1 = np.argmax(q_s_a_d_1[i])
-                current_q_1[action_1] = reward_1 + self._gamma * target_q_s_a_d_1[i][max_action_1]  # update Q(state, action)
-                x_1[i] = state_1
-                y_1[i] = current_q_1  # Q(state) that includes the updated action value
-                #似乎明白了些什么，普通的qlearning就是把state和current_q值列表列出来，
-                #deep q network就是用已有的数据对，搞了个拟合，因此成为连续的了
-
-            self._Model.train_batch_1(x_1, y_1)  # train the NN
-        '''
 
 
     def _save_episode_stats_1(self):
