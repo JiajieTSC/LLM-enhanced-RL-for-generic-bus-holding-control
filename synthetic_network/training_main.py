@@ -15,7 +15,6 @@ from shutil import copyfile
 import matplotlib.pyplot as plt
 
 from training_simulation import Simulation as training_Simulation
-#from generator import TrafficGenerator
 from memory import Memory
 from model import TrainModel
 from visualization import Visualization
@@ -28,7 +27,7 @@ import reward_function
 #if __name__ == "training_main":
 config = import_train_configuration(config_file='training_settings.ini') #输入训练过程中的配置信息，包括是否打开gui、黄灯时长、最大step等等
 sumo_cmd = set_sumo(config['gui'], config['sumocfg_file_name'], config['max_steps']) #获得sumoconfig文件等命令信息
-path = set_train_path(config['models_path_name']) #设置训练模型存储路径
+path = set_train_path(config['models_path_name']) #set the path of model saving
 
 Model = TrainModel(
     config['num_layers'], 
@@ -43,12 +42,7 @@ Memory = Memory(
     config['memory_size_max'], 
     config['memory_size_min']
 )
-'''
-TrafficGen = TrafficGenerator(
-    config['max_steps'], 
-    config['n_cars_generated']
-)
-'''
+
 Visualization = Visualization(
     path, 
     dpi=96
@@ -77,7 +71,6 @@ timestamp_start = datetime.datetime.now()
 while episode < config['total_episodes']:
     with open(path + 'reward_print.txt','a') as re_p:
         print('\n----- Episode', str(episode+1), 'of', str(config['total_episodes']),file=re_p)
-    #个人认为这个epsilon的起始值有点怪，需要结合论文确认一下
     if episode < 50:
         epsilon = 1.0 - (episode/50)  # set the epsilon for this episode according to epsilon-greedy policy
     else:
