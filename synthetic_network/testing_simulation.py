@@ -626,75 +626,11 @@ class Simulation:
                 self._trajectories_for_LLM.append(['bus5', action_start_step_bus5, bus_stop_ID_bus5, current_state_bus5, action_bus5, reward_bus5, next_state_bus5])
                 #self._reward_1_store[episode].append(reward_bus5)
                 self._sum_reward_1 += reward_bus5
-        #print("Total reward:", np.sum(self._reward_episode))
-        #traci.close()
+                
         simulation_time = round(timeit.default_timer() - start_time, 1)
 
         return simulation_time
     
-    '''
-    def _reward_function(self, current_state, action, next_state):
-        
-        Thoughts:
-        To improve the bus holding control problem, the reward function needs to:
-        1. More heavily penalize deviations from the desired headway to encourage balancing.
-        2. Penalize passenger waiting time to reduce it.
-        3. Reward actions that decrease overall journey time for passengers.
-        4. Introduce dynamic holding penalties based on passenger count and waiting time.
-        5. Adjust rewards based on system state to encourage efficient actions.
-        6. Implement a better exploration strategy during training.
-        7. Regularize rewards to stabilize training.
-        8. Ensure simulation fidelity reflects real-world conditions.
-        
-    
-        # (initial the reward)
-        reward = 0
-    
-        # (import packages and define helper functions)
-        import numpy as np
-    
-        # Helper function to calculate headway difference
-        def calculate_headway_difference(forward_headway, backward_headway):
-            return np.abs(forward_headway - backward_headway)
-    
-        # Helper function to calculate passenger waiting time penalty
-        def calculate_waiting_penalty(boarding_passengers):
-            # Assuming a fixed boarding time per passenger
-            boarding_time = 3.0 * boarding_passengers
-            # Penalty proportional to the boarding time
-            return boarding_time
-    
-        # Calculate the headway difference for the current and next states
-        current_headway_difference = calculate_headway_difference(current_state[0], current_state[1])
-        next_headway_difference = calculate_headway_difference(next_state[0], next_state[1])
-    
-        # Calculate the waiting penalty for the next state
-        next_waiting_penalty = calculate_waiting_penalty(next_state[3])
-    
-        # Update the reward based on the headway difference
-        # More heavily penalize the increase in headway difference
-        reward -= (next_headway_difference - current_headway_difference) * 2
-    
-        # Update the reward based on the waiting penalty
-        # Penalize the increase in waiting time
-        reward -= next_waiting_penalty
-    
-        # Reward for reducing the number of onboard passengers (indicating successful drop-offs)
-        reward += (current_state[2] - next_state[2]) * 2
-    
-        # Dynamic holding penalty: penalize holding action if there are many boarding passengers
-        if action == 0:
-            reward -= next_state[3] * 0.5
-    
-        # Encourage releasing the bus if the forward headway is much larger than the backward headway
-        if action == 1 and current_state[0] > current_state[1] * 1.5:
-            reward += 5
-    
-        # Regularize reward to prevent large fluctuations
-        reward = np.clip(reward, -10, 10)
-
-        return reward
-    '''
 
     def _choose_action_1(self, state):
         """
