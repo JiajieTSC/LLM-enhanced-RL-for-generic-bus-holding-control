@@ -25,8 +25,8 @@ import reward_function
 
 #if __name__ == "__main__":
 #if __name__ == "training_main":
-config = import_train_configuration(config_file='training_settings.ini') #输入训练过程中的配置信息，包括是否打开gui、黄灯时长、最大step等等
-sumo_cmd = set_sumo(config['gui'], config['sumocfg_file_name'], config['max_steps']) #获得sumoconfig文件等命令信息
+config = import_train_configuration(config_file='training_settings.ini') 
+sumo_cmd = set_sumo(config['gui'], config['sumocfg_file_name'], config['max_steps']) 
 path = set_train_path(config['models_path_name']) 
 
 Model = TrainModel(
@@ -75,7 +75,7 @@ while episode < config['total_episodes']:
         epsilon = 1.0 - (episode/50)  # set the epsilon for this episode according to epsilon-greedy policy
     else:
         epsilon = 0.02
-    simulation_time, training_time = training_Simulation.run(episode, epsilon)  # run the simulation 这里调用了simulation class，simulation class里面嵌套调用了generator里面的class
+    simulation_time, training_time = training_Simulation.run(episode, epsilon)  
     
     with open(path + 'reward_print.txt','a') as re_p:
         print("Total reward:", training_Simulation._sum_reward_1, "- Epsilon:", round(epsilon, 2),file=re_p)
