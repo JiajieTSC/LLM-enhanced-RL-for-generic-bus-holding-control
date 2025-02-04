@@ -18,9 +18,6 @@ import reward_function
 #if __name__ == "__main__":
 #if __name__ == "testing_main":
 config = import_test_configuration(config_file='testing_settings.ini')
-#sumo_cmd = set_sumo(config['gui'], config['sumocfg_file_name'], config['max_steps'])
-#model_path, plot_path = set_test_path(config['models_path_name'], config['model_to_test']) #这里要根据训练文件夹修改testing_settings配置文件里的model_to_test = n的信息
-#plot_path = training_main.path + 'test'
 
 models_path=os.path.join(os.getcwd(), 'models', '')
 dir_content = os.listdir(models_path)
@@ -33,12 +30,7 @@ Model = TestModel(
     input_dim=config['num_states'],
     model_path=model_path
 )
-'''
-TrafficGen = TrafficGenerator(
-    config['max_steps'], 
-    config['n_cars_generated']
-)
-'''
+
 Visualization = Visualization(
     plot_path, 
     dpi=96
@@ -64,10 +56,7 @@ with open(plot_path + 'test_print.txt','a') as t_p:
     print("----- Testing info saved at:", plot_path,file=t_p)
 
 
-
 copyfile(src='testing_settings.ini', dst=os.path.join(plot_path, 'testing_settings.ini'))
-
-
 
 
 f_save=open(plot_path + 'trajectory_bus0.pkl','wb')
