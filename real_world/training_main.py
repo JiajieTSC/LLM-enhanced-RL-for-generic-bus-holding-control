@@ -15,7 +15,6 @@ from shutil import copyfile
 import matplotlib.pyplot as plt
 
 from training_simulation import Simulation as training_Simulation
-#from generator import TrafficGenerator
 from memory import Memory
 from model import TrainModel
 from visualization import Visualization
@@ -28,7 +27,7 @@ import reward_function
 #if __name__ == "training_main":
 config = import_train_configuration(config_file='training_settings.ini') #输入训练过程中的配置信息，包括是否打开gui、黄灯时长、最大step等等
 sumo_cmd = set_sumo(config['gui'], config['sumocfg_file_name'], config['max_steps']) #获得sumoconfig文件等命令信息
-path = set_train_path(config['models_path_name']) #设置训练模型存储路径
+path = set_train_path(config['models_path_name']) 
 
 Model = TrainModel(
     config['num_layers'], 
@@ -43,12 +42,7 @@ Memory = Memory(
     config['memory_size_max'], 
     config['memory_size_min']
 )
-'''
-TrafficGen = TrafficGenerator(
-    config['max_steps'], 
-    config['n_cars_generated']
-)
-'''
+
 Visualization = Visualization(
     path, 
     dpi=96
@@ -77,7 +71,6 @@ timestamp_start = datetime.datetime.now()
 while episode < config['total_episodes']:
     with open(path + 'reward_print.txt','a') as re_p:
         print('\n----- Episode', str(episode+1), 'of', str(config['total_episodes']),file=re_p)
-    #个人认为这个epsilon的起始值有点怪，需要结合论文确认一下
     if episode < 50:
         epsilon = 1.0 - (episode/50)  # set the epsilon for this episode according to epsilon-greedy policy
     else:
@@ -156,50 +149,3 @@ plt.close("all")
 a_3986 = training_Simulation._passengers_stop_3986
 a_3436 = training_Simulation._passengers_stop_3436
 
-'''
-f_save=open(path + 'passengers_stop_3986.pkl','wb')
-pickle.dump(training_Simulation._passengers_stop_3986,f_save)
-f_save.close()
-
-f_save=open(path + 'passengers_stop_3436.pkl','wb')
-pickle.dump(training_Simulation._passengers_stop_3436,f_save)
-f_save.close()
-
-f_save=open(path + 'common_passengers_save.pkl','wb')
-pickle.dump(training_Simulation._common_passengers_save,f_save)
-f_save.close()
-
-bus_trajectories_3986 = []
-for bus0 in training_Simulation._bus3986:
-    bus_trajectories_3986.append(bus0._trajectory)
-f_save=open(path + 'bus_trajectories_3986.pkl','wb')
-pickle.dump(bus_trajectories_3986,f_save)
-f_save.close()
-
-bus_trajectories_3436 = []
-for bus0 in training_Simulation._bus3436:
-    bus_trajectories_3436.append(bus0._trajectory)
-f_save=open(path + 'bus_trajectories_3436.pkl','wb')
-pickle.dump(bus_trajectories_3436,f_save)
-f_save.close()
-
-stops_boarding_time_3986 = []
-for stop in training_Simulation._stops_3986:
-    stops_boarding_time_3986.append(stop._boarding_time_record)
-f_save=open(path + 'stops_boarding_time_3986.pkl','wb')
-pickle.dump(stops_boarding_time_3986,f_save)
-f_save.close()
-
-stops_boarding_time_3436 = []
-for stop in training_Simulation._stops_3436:
-    stops_boarding_time_3436.append(stop._boarding_time_record)
-f_save=open(path + 'stops_boarding_time_3436.pkl','wb')
-pickle.dump(stops_boarding_time_3436,f_save)
-f_save.close()
-
-
-f_save=open(path + 'trajectories_for_LLM.pkl','wb')
-pickle.dump(training_Simulation._trajectories_for_LLM,f_save)
-f_save.close()
-
-'''
