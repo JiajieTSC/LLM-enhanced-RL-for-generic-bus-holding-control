@@ -7,12 +7,10 @@ from shutil import copyfile
 import matplotlib.pyplot as plt
 
 from testing_simulation import Simulation as testing_Simulation
-#from generator import TrafficGenerator
 from model import TestModel
 from visualization import Visualization
 from utils import import_test_configuration, set_sumo, set_test_path
 import pickle
-#import training_main
 import reward_function
 
 #if __name__ == "__main__":
